@@ -51,6 +51,7 @@ typedef struct ElfSectionHeader {
     uint64_t v_addr;
     uint64_t p_addr;
     uint64_t file_size;
+    Buf s_data;
     uint32_t link;
     uint32_t info;
     uint64_t alignment;

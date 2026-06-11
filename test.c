@@ -51,20 +51,5 @@ int main() {
     BufReader file_buf = BufReader_ctor(file_size);
     ReadFileIntoBufReader(fp, &file_buf);
 
-    ElfHeader header = ElfHeader_ctor(&file_buf);
-    PrintElfHeader(&header);
-
-    BufReader_seek_to(&file_buf, header.ph_offset);
-    ElfProgramHeader p_headers[header.ph_count];
-    for (int i = 0; i < header.ph_count; i++) {
-        p_headers[i] = ElfProgramHeader_ctor(&file_buf);
-    }
-
-    BufReader_seek_to(&file_buf, header.sh_offset);
-    ElfSectionHeader s_headers[header.sh_count];
-    for (int i = 0; i < header.sh_count; i++) {
-        s_headers[i] = ElfSectionHeader_ctor(&file_buf);
-    }
-
     return 0;
 }    
