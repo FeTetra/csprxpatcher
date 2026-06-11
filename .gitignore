@@ -1,3 +1,6 @@
 # GCC Output
 *.out
 *.dSYM
+
+# PS3 ELFs
+*.elf
