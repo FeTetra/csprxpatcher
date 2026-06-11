@@ -58,6 +58,9 @@ Elf Elf_ctor(BufReader *reader) {
 }
 
 void Elf_dtor(Elf *self) {
+    for (int i = 0; i < self->header.sh_count; i++) {
+        Buf_dtor(&self->s_headers[i].s_data);
+    }
     free(self->p_headers);
     free(self->s_headers);
     memset(self, 0, sizeof(Elf)); // Maybe bad since this makes nullptrs who cares
