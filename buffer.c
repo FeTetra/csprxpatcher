@@ -1,4 +1,5 @@
 #include "buffer.h"
+#include <stddef.h>
 
 Buf Buf_ctor(size_t size) {
     void *data = malloc(size);
@@ -12,7 +13,7 @@ void Buf_dtor(Buf *self) {
     self->size = 0;
 }
 
-BufReader BufReader_ctor(void *buf, size_t size) {
+BufReader BufReader_ctor(size_t size) {
     BufReader result = { Buf_ctor(size), 0 };
     return result;
 }
@@ -24,6 +25,24 @@ void BufReader_dtor(BufReader *self) {
 
 int BufReader_has_remaining(BufReader *self, size_t size) {
     return (self->buf.size - self->pos) >= size;
+}
+
+int BufReader_seek_to(BufReader *self, size_t pos) {
+    if (pos <= self->buf.size) {
+        self->pos = pos;
+        return 1;
+    }
+
+    return 0;
+}
+
+int BufReader_seek_from_cur(BufReader *self, size_t nbytes) {
+    if ((self->pos + nbytes) <= self->buf.size) {
+        self->pos += nbytes;
+        return 1;
+    }
+
+    return 0;
 }
 
 int BufReader_read_u8(BufReader *self, uint8_t *out) {

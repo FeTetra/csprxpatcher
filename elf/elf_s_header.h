@@ -1,25 +1,30 @@
+#ifndef ELF_S_HEADER_H
+#define ELF_S_HEADER_H
+
 #include <stdint.h>
 #include <stddef.h>
 
+#include "../buffer.h"
+
 typedef enum SectionType : uint32_t {
-    Null = 0,
+    SNull = 0,
     Progbits = 1,
     Symtab = 2,
     Strtab = 3,
     Rela = 4,
     Hash = 5,
-    Dynamic = 6,
-    Note = 7,
+    SDynamic = 6,
+    SNote = 7,
     Nobits = 8,
     Rel = 9,
-    Shlib = 10,
+    SShlib = 10,
     Dynsym = 11,
     InitArray = 14,
     FiniArray = 15,
     PreinitArray = 16,
     Group_st = 17,
     SymtabShndx = 18,
-    Loos = 0x60000000,
+    SLoos = 0x60000000,
 } SectionType;
 
 typedef enum SectionFlags : uint64_t {
@@ -32,7 +37,7 @@ typedef enum SectionFlags : uint64_t {
     LinkOrder = 128,
     OsNonConforming = 256,
     Group_sf = 512,
-    Tls = 1024,
+    STls = 1024,
     MaskOs = 0x0FF00000,
     MaskProc = 0xF0000000,
     Ordered = 0x40000000,
@@ -51,3 +56,7 @@ typedef struct ElfSectionHeader {
     uint64_t alignment;
     uint64_t entry_size;
 } ElfSectionHeader;
+
+ElfSectionHeader ElfSectionHeader_ctor(BufReader *reader);
+
+#endif // ELF_S_HEADER_H

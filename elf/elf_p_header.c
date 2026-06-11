@@ -1,5 +1,4 @@
 #include "elf_p_header.h"
-#include "../buffer.h"
 
 ElfProgramHeader ElfProgramHeader_ctor(BufReader *reader) {
     ElfProgramHeader result;

@@ -1,16 +1,21 @@
+#ifndef ELF_P_HEADER_H
+#define ELF_P_HEADER_H
+
 #include <stddef.h>
 #include <stdint.h>
 
+#include "../buffer.h"
+
 typedef enum ProgramType : uint32_t {
-    Null = 0,
+    PNull = 0,
     Load = 1,
-    Dynamic = 2,
+    PDynamic = 2,
     Interp = 3,
-    Note = 4,
-    Shlib = 5,
+    PNote = 4,
+    PShlib = 5,
     Phdr = 6,
-    Tls = 7,
-    Loos = 0x60000000,
+    PTls = 7,
+    PLoos = 0x60000000,
     Hios = 0x6fffffff,
     Loproc = 0x70000000,
     Hiproc = 0x7fffffff,
@@ -32,3 +37,7 @@ typedef struct ElfProgramHeader {
     uint64_t mem_size;
     uint64_t alignment;
 } ElfProgramHeader;
+
+ElfProgramHeader ElfProgramHeader_ctor(BufReader *reader);
+
+#endif // ELF_P_HEADER_H
