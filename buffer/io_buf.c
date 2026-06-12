@@ -1,5 +1,4 @@
 #include "io_buf.h"
-#include <stddef.h>
 
 IoBuf IoBuf_ctor(size_t size) {
     IoBuf result = { Buf_ctor(size), 0 };

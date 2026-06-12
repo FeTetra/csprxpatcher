@@ -4,3 +4,6 @@
 
 # PS3 ELFs
 *.elf
+
+# IDE Junk
+.vscode/

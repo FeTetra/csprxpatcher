@@ -1,5 +1,4 @@
 #include "buffer.h"
-#include <stddef.h>
 
 Buf Buf_ctor(size_t size) {
     void *data = malloc(size);

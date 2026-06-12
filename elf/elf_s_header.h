@@ -60,5 +60,6 @@ typedef struct ElfSectionHeader {
 } ElfSectionHeader;
 
 ElfSectionHeader ElfSectionHeader_ctor(IoBuf *reader);
+void ElfSectionHeader_write(ElfSectionHeader *self, IoBuf *writer);
 
 #endif // ELF_S_HEADER_H

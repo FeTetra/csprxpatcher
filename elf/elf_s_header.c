@@ -24,3 +24,18 @@ void ElfSectionHeader_dtor(ElfSectionHeader *self) {
     Buf_dtor(&self->s_data);
     memset(self, 0, sizeof(Buf));
 }
+
+void ElfSectionHeader_write(ElfSectionHeader *self, IoBuf *writer) {
+    IoBuf_write_u32(writer, self->name_offset);
+    IoBuf_write_u32(writer, self->type);
+    IoBuf_write_u64(writer, self->flags);
+
+    IoBuf_write_u64(writer, self->v_addr);
+    IoBuf_write_u64(writer, self->p_addr);
+    IoBuf_write_u64(writer, self->file_size);
+
+    IoBuf_write_u32(writer, self->link);
+    IoBuf_write_u32(writer, self->info);
+    IoBuf_write_u64(writer, self->alignment);
+    IoBuf_write_u64(writer, self->entry_size);
+}

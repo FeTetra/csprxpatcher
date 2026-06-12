@@ -1,5 +1,6 @@
 #include "elf.h"
 #include "elf_header.h"
+#include "elf_s_header.h"
 
 uint32_t VirtualAddressToOffset(Elf *self, uint64_t v_addr) {
     uint32_t result = 0;
@@ -11,6 +12,16 @@ uint32_t VirtualAddressToOffset(Elf *self, uint64_t v_addr) {
             break;
         }
     }
+    return result;
+}
+
+uint64_t Elf_get_highest_v_addr(Elf *self) {
+    uint64_t result = 0;
+    for (int i = 0; i < self->header.sh_count; i++) {
+        uint64_t v_addr = self->s_headers[i].v_addr;
+        result = (result < v_addr) ? v_addr : result;
+    }
+
     return result;
 }
 
@@ -64,8 +75,46 @@ void Elf_dtor(Elf *self) {
     memset(self, 0, sizeof(Elf)); // Maybe bad since this makes nullptrs who cares
 }
 
+size_t Align(size_t value, size_t alignment) {
+    return (value + alignment - 1) & ~(alignment - 1);
+}
+
+void SeekToAlignment(IoBuf *writer, size_t alignment) {
+    size_t current = writer->pos;
+    size_t aligned = Align(current, alignment);
+
+    if (aligned > current) {
+        size_t zero_buf_size = aligned - current;
+        uint8_t zeroes[zero_buf_size];
+        memset(zeroes, 0, zero_buf_size);
+        IoBuf_write_size_from_mem(writer, zeroes, zero_buf_size);
+    } else if (aligned < current) {
+        IoBuf_seek_to(writer, aligned);
+    }
+}
+
 void Elf_write(Elf *self, IoBuf *writer) {
     IoBuf_seek_to(writer, 0);
     ElfHeader_write(&self->header, writer);
-    
+
+    uint64_t ph_offset = self->header.ph_offset;
+    uint16_t ph_size = (self->header.ph_count * 0x38);
+    uint64_t ph_end = (ph_offset + (uint64_t)ph_size);
+
+    size_t current = writer->pos;
+    uint64_t zero_buf_size = ph_end - (uint64_t)current;
+    uint8_t zeroes[zero_buf_size];
+    memset(zeroes, 0, zero_buf_size);
+    IoBuf_write_size_from_mem(writer, zeroes, zero_buf_size);
+
+    for (int i = 0; i < self->header.sh_count; i++) {
+        ElfSectionHeader_write(&self->s_headers[i], writer);
+    }
+
+    IoBuf_seek_to(writer, writer->buf.size); // Seek to end
+    SeekToAlignment(writer, 0x1000);
+    uint64_t new_s_offset = writer->pos;
+
+    uint64_t highest_v_addr = Elf_get_highest_v_addr(self);
+    uint64_t new_s_v_addr = 0x13370000; // lol
 }
