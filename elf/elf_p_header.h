@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "../buffer.h"
+#include "../buffer/io_buf.h"
 
 typedef enum ProgramType : uint32_t {
     PNull = 0,
@@ -38,6 +38,6 @@ typedef struct ElfProgramHeader {
     uint64_t alignment;
 } ElfProgramHeader;
 
-ElfProgramHeader ElfProgramHeader_ctor(BufReader *reader);
+ElfProgramHeader ElfProgramHeader_ctor(IoBuf *reader);
 
 #endif // ELF_P_HEADER_H

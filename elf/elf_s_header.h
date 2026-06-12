@@ -4,7 +4,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "../buffer.h"
+#include "../buffer/buffer.h"
+#include "../buffer/io_buf.h"
 
 typedef enum SectionType : uint32_t {
     SNull = 0,
@@ -58,6 +59,6 @@ typedef struct ElfSectionHeader {
     uint64_t entry_size;
 } ElfSectionHeader;
 
-ElfSectionHeader ElfSectionHeader_ctor(BufReader *reader);
+ElfSectionHeader ElfSectionHeader_ctor(IoBuf *reader);
 
 #endif // ELF_S_HEADER_H

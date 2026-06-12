@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "../buffer.h"
+#include "../buffer/io_buf.h"
 
 typedef struct ElfHeader {
     uint64_t entry;
@@ -16,6 +16,7 @@ typedef struct ElfHeader {
     uint16_t sh_str_idx;
 } ElfHeader;
 
-ElfHeader ElfHeader_ctor(BufReader *reader);
+ElfHeader ElfHeader_ctor(IoBuf *reader);
+void ElfHeader_write(ElfHeader *self, IoBuf *writer);
 
 #endif // ELF_HEADER_H

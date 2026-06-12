@@ -1,45 +1,66 @@
-#include "../buffer.h"
-#include <stdint.h>
 #include "elf_header.h"
 
-ElfHeader ElfHeader_ctor(BufReader *reader) {
+ElfHeader ElfHeader_ctor(IoBuf *reader) {
     ElfHeader result;
 
     uint32_t magic;
-    BufReader_read_u32(reader, &magic);
+    IoBuf_read_u32(reader, &magic);
 
     uint8_t ei_class;
-    BufReader_read_u8(reader, &ei_class);
+    IoBuf_read_u8(reader, &ei_class);
     uint8_t ei_data;
-    BufReader_read_u8(reader, &ei_data);
+    IoBuf_read_u8(reader, &ei_data);
     uint8_t ver;
-    BufReader_read_u8(reader, &ver);
+    IoBuf_read_u8(reader, &ver);
     uint8_t os_abi;
-    BufReader_read_u8(reader, &os_abi);
+    IoBuf_read_u8(reader, &os_abi);
 
     Buf padding = Buf_ctor(7);
-    BufReader_read_size(reader, &padding, 7);
+    IoBuf_read_size(reader, &padding, 7);
 
     uint16_t type;
-    BufReader_read_u16(reader, &type);
+    IoBuf_read_u16(reader, &type);
     uint16_t machine;
-    BufReader_read_u16(reader, &machine);
+    IoBuf_read_u16(reader, &machine);
     uint32_t version;
-    BufReader_read_u32(reader, &version);
+    IoBuf_read_u32(reader, &version);
 
-    BufReader_read_u64(reader, &result.entry);
-    BufReader_read_u64(reader, &result.ph_offset);
-    BufReader_read_u64(reader, &result.sh_offset);
-    BufReader_read_u32(reader, &result.flags);
+    IoBuf_read_u64(reader, &result.entry);
+    IoBuf_read_u64(reader, &result.ph_offset);
+    IoBuf_read_u64(reader, &result.sh_offset);
+    IoBuf_read_u32(reader, &result.flags);
     
     uint16_t size;
-    BufReader_read_u16(reader, &size);
+    IoBuf_read_u16(reader, &size);
     uint16_t ph_ent_size;
-    BufReader_read_u16(reader, &ph_ent_size);
+    IoBuf_read_u16(reader, &ph_ent_size);
     
-    BufReader_read_u16(reader, &result.ph_count);
-    BufReader_read_u16(reader, &result.sh_count);
-    BufReader_read_u16(reader, &result.sh_str_idx);
+    IoBuf_read_u16(reader, &result.ph_count);
+    IoBuf_read_u16(reader, &result.sh_count);
+    IoBuf_read_u16(reader, &result.sh_str_idx);
 
     return result;
+}
+
+void ElfHeader_write(ElfHeader *self, IoBuf *writer) {
+    unsigned char magic_num[] = {0x7F, 'E', 'L', 'F'};
+    IoBuf_write_size_from_mem(writer, magic_num, 4);
+    IoBuf_write_u8(writer, 2);
+    IoBuf_write_u8(writer, 2);
+    IoBuf_write_u8(writer, 1);
+    IoBuf_write_u8(writer, 0x66);
+    IoBuf_write_u8(writer, 0);
+    for (int i = 0; i < 7; i++) IoBuf_write_u8(writer, 0);
+    IoBuf_write_u16(writer, 2);
+    IoBuf_write_u16(writer, 0x15);
+    IoBuf_write_u64(writer, self->entry);
+    IoBuf_write_u64(writer, self->ph_offset);
+    IoBuf_write_u64(writer, self->sh_offset);
+    IoBuf_write_u32(writer, self->flags);
+    IoBuf_write_u16(writer, 0x40);
+    IoBuf_write_u16(writer, 0x38);
+    IoBuf_write_u16(writer, self->ph_count);
+    IoBuf_write_u16(writer, 0x40);
+    IoBuf_write_u16(writer, self->sh_count);
+    IoBuf_write_u16(writer, self->sh_str_idx);
 }
