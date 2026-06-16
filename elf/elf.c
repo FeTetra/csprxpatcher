@@ -117,4 +117,6 @@ void Elf_write(Elf *self, IoBuf *writer) {
 
     uint64_t highest_v_addr = Elf_get_highest_v_addr(self);
     uint64_t new_s_v_addr = 0x13370000; // lol
+
+    
 }
