@@ -1,13 +1,4 @@
-#include <stdlib.h>
-#include <stddef.h>
-#include <stdint.h>
-
-#include "../buffer/io_buf.h"
-
-typedef struct ShellCode {
-    uint32_t *opcodes;
-    size_t count;
-} ShellCode;
+#include "shellcode.h"
 
 ShellCode ShellCode_ctor(size_t count) {
     ShellCode result;
@@ -20,11 +11,6 @@ void ShellCode_dtor(ShellCode *self) {
     free(self->opcodes);
     memset(self, 0, sizeof(ShellCode));
 }
-
-typedef struct Payload {
-    IoBuf payload;
-    ShellCode jump;
-} Payload;
 
 void BuildJump(ShellCode *self, uint32_t address) {
     uint16_t upper = (uint16_t)(address >> 16);

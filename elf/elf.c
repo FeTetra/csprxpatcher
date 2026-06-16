@@ -1,6 +1,9 @@
+#include <stdio.h>
+
 #include "elf.h"
 #include "elf_header.h"
 #include "elf_s_header.h"
+#include "shellcode.h"
 
 uint32_t VirtualAddressToOffset(Elf *self, uint64_t v_addr) {
     uint32_t result = 0;
@@ -54,9 +57,10 @@ Elf Elf_ctor(IoBuf *reader) {
     IoBuf_read_u32(reader, &result.entrypoint_address);
     result.entrypoint_offset = VirtualAddressToOffset(&result, result.entrypoint_address);
 
+    result.entrypoint = ShellCode_ctor(4);
     IoBuf_seek_to(reader, result.entrypoint_offset);
     for (int i = 0; i < 4; i++) {
-        IoBuf_read_u32(reader, &result.entrypoint_instructions[i]);
+        IoBuf_read_u32(reader, &result.entrypoint.opcodes[i]);
     }
 
     result.header = header;
@@ -73,6 +77,29 @@ void Elf_dtor(Elf *self) {
     free(self->p_headers);
     free(self->s_headers);
     memset(self, 0, sizeof(Elf)); // Maybe bad since this makes nullptrs who cares
+}
+
+// These expect that you have malloc'd your headers
+int Elf_add_program_header(Elf *self, ElfProgramHeader new_header) {
+    self->header.ph_count += 1;
+    ElfProgramHeader *tmp_ptr = realloc(self->p_headers, self->header.ph_count);
+    if (tmp_ptr == NULL) {
+        printf("Could not expand program headers\n");
+        return 0;
+    } else self->p_headers = tmp_ptr;
+    self->p_headers[self->header.ph_count] = new_header;
+    return 1;
+}
+
+int Elf_add_section_header(Elf *self, ElfSectionHeader new_header) {
+    self->header.sh_count += 1;
+    ElfSectionHeader *tmp_ptr = realloc(self->p_headers, self->header.ph_count);
+    if (tmp_ptr == NULL) {
+        printf("Could not expand section headers\n");
+        return 0;
+    } else self->s_headers = tmp_ptr;
+    self->s_headers[self->header.ph_count] = new_header;
+    return 1;
 }
 
 size_t Align(size_t value, size_t alignment) {
@@ -93,9 +120,9 @@ void SeekToAlignment(IoBuf *writer, size_t alignment) {
     }
 }
 
-void Elf_write(Elf *self, IoBuf *writer) {
+void Elf_write_prx_patched(Elf *self, IoBuf *writer, char *prx_path) {
     IoBuf_seek_to(writer, 0);
-    ElfHeader_write(&self->header, writer);
+    IoBuf_pad(writer, sizeof(ElfHeader)); // Temporarily zero header
 
     uint64_t ph_offset = self->header.ph_offset;
     uint16_t ph_size = (self->header.ph_count * 0x38);
@@ -118,5 +145,57 @@ void Elf_write(Elf *self, IoBuf *writer) {
     uint64_t highest_v_addr = Elf_get_highest_v_addr(self);
     uint64_t new_s_v_addr = 0x13370000; // lol
 
-    
+    ShellCode old_entrypoint = ShellCode_ctor(4);
+    Payload entry_payload = Payload_ctor(
+        prx_path, 
+        &self->entrypoint, 
+        self->entrypoint_address,
+        new_s_v_addr
+    );
+    IoBuf_write_size(
+        writer, 
+        &entry_payload.payload.buf,
+        entry_payload.payload.buf.size // Maybe i should make an IoBuf_write_entire(writer, buf)
+    );
+
+    ElfSectionHeader new_s_header = {
+        .name_offset = 0, 
+        .type = Progbits, 
+        .flags = Alloc | ExecInstr, 
+        .v_addr = new_s_v_addr, 
+        .p_addr = new_s_offset, 
+        .file_size = entry_payload.payload.buf.size,
+        .link = 0,
+        .info = 0,
+        .alignment = 1,
+        .entry_size = 0,
+    };
+
+    // I need to rename some of these enum variants badly
+    ElfProgramHeader new_p_header = {
+        .type = Load,
+        .flags = R | X,
+        .offset = new_s_offset,
+        .v_addr = new_s_header.v_addr,
+        .p_addr = new_s_header.p_addr,
+        .file_size = new_s_header.file_size,
+        .mem_size = new_s_header.file_size,
+        .alignment = 0x1000,
+    };
+
+    // TODO: error handling my beloathed
+    Elf_add_section_header(self, new_s_header);
+    Elf_add_program_header(self, new_p_header);
+    self->header.sh_count = writer->pos;
+    for (size_t i = 0; i < self->header.sh_count; i++) {
+        ElfSectionHeader_write(&self->s_headers[i], writer);
+    }
+    self->header.ph_offset = writer->pos;
+    for (size_t i = 0; i < self->header.ph_count; i++) {
+        ElfProgramHeader_write(&self->p_headers[i], writer);
+    }
+
+    // Write header with updated offsets
+    ElfHeader_write(&self->header, writer);
 }
+

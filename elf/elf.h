@@ -8,6 +8,7 @@
 #include "elf_p_header.h"
 #include "elf_s_header.h"
 #include "../buffer/io_buf.h"
+#include "shellcode.h"
 
 typedef struct Elf {
     ElfHeader header;
@@ -16,7 +17,7 @@ typedef struct Elf {
 
     uint32_t entrypoint_offset;
     uint32_t entrypoint_address;
-    uint32_t entrypoint_instructions[4];
+    ShellCode entrypoint;
 } Elf;
 
 #endif // ELF_H

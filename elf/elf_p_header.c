@@ -14,3 +14,14 @@ ElfProgramHeader ElfProgramHeader_ctor(IoBuf *reader) {
 
     return result;
 }
+
+void ElfProgramHeader_write(ElfProgramHeader *self, IoBuf *writer) {
+    IoBuf_write_u32(writer, self->type);
+    IoBuf_write_u32(writer, self->flags);
+    IoBuf_write_u64(writer, self->offset);
+    IoBuf_write_u64(writer, self->v_addr);
+    IoBuf_write_u64(writer, self->p_addr);
+    IoBuf_write_u64(writer, self->file_size);
+    IoBuf_write_u64(writer, self->mem_size);
+    IoBuf_write_u64(writer, self->alignment);
+}

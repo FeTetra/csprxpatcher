@@ -17,6 +17,7 @@ void IoBuf_dtor(IoBuf *self);
 int IoBuf_has_remaining(IoBuf *self, size_t size);
 int IoBuf_seek_to(IoBuf *self, size_t pos);
 int IoBuf_seek_from_cur(IoBuf *self, size_t nbytes);
+int IoBuf_pad(IoBuf *self, size_t count)
 
 int IoBuf_read_u8(IoBuf *self, uint8_t *out);
 int IoBuf_read_u16(IoBuf *self, uint16_t *out);

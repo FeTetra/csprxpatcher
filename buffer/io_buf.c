@@ -30,6 +30,17 @@ int IoBuf_seek_from_cur(IoBuf *self, size_t nbytes) {
     return 0;
 }
 
+int IoBuf_pad(IoBuf *self, size_t count) {
+    if (IoBuf_has_remaining(self, count)) {
+        self->pos += count;
+        for (size_t i = 0; i < count; i++) {
+            self->buf.data[i] = 0;
+        }
+        return 1;
+    }
+    return 0;
+}
+
 int IoBuf_read_u8(IoBuf *self, uint8_t *out) {
     if (IoBuf_has_remaining(self, 1)) {
         *out = *(uint8_t *)(self->buf.data + self->pos);

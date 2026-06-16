@@ -39,5 +39,6 @@ typedef struct ElfProgramHeader {
 } ElfProgramHeader;
 
 ElfProgramHeader ElfProgramHeader_ctor(IoBuf *reader);
+void ElfProgramHeader_write(ElfProgramHeader *self, IoBuf *writer);
 
 #endif // ELF_P_HEADER_H
