@@ -3,7 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "buffer.h"
+#include "buffer/io_buf.h"
+#include "elf/elf.h"
 #include "elf/elf_header.h"
 #include "elf/elf_p_header.h"
 #include "elf/elf_s_header.h"
@@ -15,7 +16,7 @@ size_t GetFileSize(FILE *fp) {
     return result;
 }
 
-int ReadFileIntoBufReader(FILE *fp, BufReader *reader) {
+int ReadFileIntoBufReader(FILE *fp, IoBuf *reader) {
     size_t size = GetFileSize(fp);
 
     if (size > 0) {
@@ -48,8 +49,16 @@ int main() {
         return 1;
     }
 
-    BufReader file_buf = BufReader_ctor(file_size);
+    IoBuf file_buf = IoBuf_ctor(file_size);
     ReadFileIntoBufReader(fp, &file_buf);
+
+    Elf elf = Elf_ctor(&file_buf);
+
+    IoBuf_dtor(&file_buf);
+
+    PrintElfHeader(&elf.header);
+    
+    Elf_dtor(&elf);
 
     return 0;
 }    

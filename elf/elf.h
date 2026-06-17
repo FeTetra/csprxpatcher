@@ -20,4 +20,9 @@ typedef struct Elf {
     ShellCode entrypoint;
 } Elf;
 
+Elf Elf_ctor(IoBuf *reader);
+void Elf_dtor(Elf *self);
+
+void Elf_write_prx_patched(Elf *self, IoBuf *writer, char *prx_path);
+
 #endif // ELF_H

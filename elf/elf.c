@@ -145,7 +145,6 @@ void Elf_write_prx_patched(Elf *self, IoBuf *writer, char *prx_path) {
     uint64_t highest_v_addr = Elf_get_highest_v_addr(self);
     uint64_t new_s_v_addr = 0x13370000; // lol
 
-    ShellCode old_entrypoint = ShellCode_ctor(4);
     Payload entry_payload = Payload_ctor(
         prx_path, 
         &self->entrypoint, 
@@ -157,6 +156,10 @@ void Elf_write_prx_patched(Elf *self, IoBuf *writer, char *prx_path) {
         &entry_payload.payload.buf,
         entry_payload.payload.buf.size // Maybe i should make an IoBuf_write_entire(writer, buf)
     );
+
+    IoBuf_write_shellcode(writer, &entry_payload.jump, entry_payload.jump.count); // Yea i should
+    ShellCode_dtor(&entry_payload.jump);
+    SeekToAlignment(writer, 0x1000);
 
     ElfSectionHeader new_s_header = {
         .name_offset = 0, 
