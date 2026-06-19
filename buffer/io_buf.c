@@ -1,7 +1,7 @@
 #include "io_buf.h"
 
-IoBuf IoBuf_ctor(size_t size) {
-    IoBuf result = { Buf_ctor(size), 0 };
+IoBuf IoBuf_ctor(size_t size, Endian endian) {
+    IoBuf result = { Buf_ctor(size), 0, endian};
     return result;
 }
 
@@ -53,6 +53,7 @@ int IoBuf_read_u8(IoBuf *self, uint8_t *out) {
 int IoBuf_read_u16(IoBuf *self, uint16_t *out) {
     if (IoBuf_has_remaining(self, 2)) {
         *out = *(uint16_t *)(self->buf.data + self->pos);
+        *out = u16_to_system_endian(*out, self->endian);
         self->pos += 2;
         return 1;
     }
@@ -62,6 +63,7 @@ int IoBuf_read_u16(IoBuf *self, uint16_t *out) {
 int IoBuf_read_u32(IoBuf *self, uint32_t *out) {
     if (IoBuf_has_remaining(self, 4)) {
         *out = *(uint32_t *)(self->buf.data + self->pos);
+        *out = u32_to_system_endian(*out, self->endian);
         self->pos += 4;
         return 1;
     }
@@ -71,6 +73,7 @@ int IoBuf_read_u32(IoBuf *self, uint32_t *out) {
 int IoBuf_read_u64(IoBuf *self, uint64_t *out) {
     if (IoBuf_has_remaining(self, 8)) {
         *out = *(uint64_t *)(self->buf.data + self->pos);
+        *out = u64_to_system_endian(*out, self->endian);
         self->pos += 4;
         return 1;
     }
@@ -97,6 +100,7 @@ int IoBuf_write_u8(IoBuf *self, uint8_t in) {
 
 int IoBuf_write_u16(IoBuf *self, uint16_t in) {
     if (IoBuf_has_remaining(self, 2)) {
+        in = u16_to_system_endian(in, self->endian);
         *(uint16_t *)(self->buf.data + self->pos) = in;
         self->pos += 2;
         return 1;
@@ -106,6 +110,7 @@ int IoBuf_write_u16(IoBuf *self, uint16_t in) {
 
 int IoBuf_write_u32(IoBuf *self, uint32_t in) {
     if (IoBuf_has_remaining(self, 4)) {
+        in = u32_to_system_endian(in, self->endian);
         *(uint32_t *)(self->buf.data + self->pos) = in;
         self->pos += 4;
         return 1;
@@ -115,6 +120,7 @@ int IoBuf_write_u32(IoBuf *self, uint32_t in) {
 
 int IoBuf_write_u64(IoBuf *self, uint64_t in) {
     if (IoBuf_has_remaining(self, 8)) {
+        in = u64_to_system_endian(in, self->endian);
         *(uint64_t *)(self->buf.data + self->pos) = in;
         self->pos += 8;
         return 1;

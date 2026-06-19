@@ -49,7 +49,7 @@ int main() {
         return 1;
     }
 
-    IoBuf file_buf = IoBuf_ctor(file_size);
+    IoBuf file_buf = IoBuf_ctor(file_size, Big);
     ReadFileIntoBufReader(fp, &file_buf);
 
     Elf elf = Elf_ctor(&file_buf);

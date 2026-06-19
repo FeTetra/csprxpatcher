@@ -1,4 +1,5 @@
-CSRCS="buffer.c elf/elf_header.c elf/elf_p_header.c elf/elf_s_header.c"
+CSRCS="buffer/buffer.c buffer/io_buf.c buffer/endian.c"
+CSRCS="$CSRCS elf/elf_header.c elf/elf_p_header.c elf/elf_s_header.c elf/elf.c elf/shellcode.c"
 CFLAGS=""
 DEBUG=1
 

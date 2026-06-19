@@ -5,13 +5,15 @@
 #include <stdint.h>
 
 #include "buffer.h"
+#include "endian.h"
 
 typedef struct IoBuf {
     Buf buf;
     size_t pos;
+    Endian endian;
 } IoBuf;
 
-IoBuf IoBuf_ctor(size_t size);
+IoBuf IoBuf_ctor(size_t size, Endian endian);
 void IoBuf_dtor(IoBuf *self);
 
 int IoBuf_has_remaining(IoBuf *self, size_t size);

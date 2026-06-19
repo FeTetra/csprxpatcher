@@ -47,7 +47,7 @@ Payload Payload_ctor(
     size_t code_size = bin_size + entrypoint_size;
     size_t sprx_path_size = strlen(sprx_path) + 1; // Include null terminator
 
-    IoBuf payload = IoBuf_ctor(code_size + sprx_path_size);
+    IoBuf payload = IoBuf_ctor(code_size + sprx_path_size, Big);
 
     Buf bin_code = Buf_ctor(bin_size);
     memset(bin_code.data, 0, bin_size);
