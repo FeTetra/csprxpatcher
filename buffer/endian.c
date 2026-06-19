@@ -34,14 +34,14 @@ uint16_t u16_to_system_endian(uint16_t n, Endian e) {
     return n;
 }
 
-uint32_t u32_to_system_endian(uint16_t n, Endian e) {
+uint32_t u32_to_system_endian(uint32_t n, Endian e) {
     if (e != SYSTEM_ENDIAN) {
         return u32_swap(n);
     }
     return n;
 }
 
-uint64_t u64_to_system_endian(uint16_t n, Endian e) {
+uint64_t u64_to_system_endian(uint64_t n, Endian e) {
     if (e != SYSTEM_ENDIAN) {
         return u64_swap(n);
     }

@@ -16,7 +16,7 @@ uint32_t u32_swap(uint32_t n);
 uint64_t u64_swap(uint64_t n);
 
 uint16_t u16_to_system_endian(uint16_t n, Endian e);
-uint32_t u32_to_system_endian(uint16_t n, Endian e);
-uint64_t u64_to_system_endian(uint16_t n, Endian e);
+uint32_t u32_to_system_endian(uint32_t n, Endian e);
+uint64_t u64_to_system_endian(uint64_t n, Endian e);
 
 #endif // ENDIAN_H

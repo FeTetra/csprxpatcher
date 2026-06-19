@@ -52,7 +52,8 @@ int IoBuf_read_u8(IoBuf *self, uint8_t *out) {
 
 int IoBuf_read_u16(IoBuf *self, uint16_t *out) {
     if (IoBuf_has_remaining(self, 2)) {
-        *out = *(uint16_t *)(self->buf.data + self->pos);
+        //*out = *(uint16_t *)(self->buf.data + self->pos);
+        memcpy(out, self->buf.data + self->pos, sizeof(uint16_t));
         *out = u16_to_system_endian(*out, self->endian);
         self->pos += 2;
         return 1;
@@ -62,7 +63,8 @@ int IoBuf_read_u16(IoBuf *self, uint16_t *out) {
 
 int IoBuf_read_u32(IoBuf *self, uint32_t *out) {
     if (IoBuf_has_remaining(self, 4)) {
-        *out = *(uint32_t *)(self->buf.data + self->pos);
+        //*out = *(uint32_t *)(self->buf.data + self->pos);
+        memcpy(out, self->buf.data + self->pos, sizeof(uint32_t));
         *out = u32_to_system_endian(*out, self->endian);
         self->pos += 4;
         return 1;
@@ -72,9 +74,10 @@ int IoBuf_read_u32(IoBuf *self, uint32_t *out) {
 
 int IoBuf_read_u64(IoBuf *self, uint64_t *out) {
     if (IoBuf_has_remaining(self, 8)) {
-        *out = *(uint64_t *)(self->buf.data + self->pos);
+        //*out = *(uint64_t *)(self->buf.data + self->pos);
+        memcpy(out, self->buf.data + self->pos, sizeof(uint64_t));
         *out = u64_to_system_endian(*out, self->endian);
-        self->pos += 4;
+        self->pos += 8;
         return 1;
     }
     return 0;

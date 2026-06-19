@@ -14,6 +14,8 @@ ElfHeader ElfHeader_ctor(IoBuf *reader) {
     IoBuf_read_u8(reader, &ver);
     uint8_t os_abi;
     IoBuf_read_u8(reader, &os_abi);
+    uint8_t abi_ver;
+    IoBuf_read_u8(reader, &abi_ver);
 
     Buf padding = Buf_ctor(7);
     IoBuf_read_size(reader, &padding, 7);
