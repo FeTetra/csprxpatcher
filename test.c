@@ -57,13 +57,13 @@ void PrintElfHeader(ElfHeader *header) {
 
 void PrintElfProgramHeader(ElfProgramHeader *p_header) {
     printf("ph type: %d\n", p_header->type);
-    printf("ph flags: %d\n", p_header->flags);
-    printf("ph offset: %llx\n", p_header->offset);
-    printf("ph virtual addr: %llx\n", p_header->v_addr);
-    printf("ph physical addr: %llx\n", p_header->p_addr);
+    printf("ph flags: %x\n", p_header->flags);
+    printf("ph offset: %lld\n", p_header->offset);
+    printf("ph virtual addr: %lld\n", p_header->v_addr);
+    printf("ph physical addr: %lld\n", p_header->p_addr);
     printf("ph file size: %lld\n", p_header->file_size);
     printf("ph mem size: %lld\n", p_header->mem_size);
-    printf("ph alignment: %llx\n", p_header->alignment);
+    printf("ph alignment: %lld\n", p_header->alignment);
 }
 
 void PrintElfSectionHeader(ElfSectionHeader *s_header) {
@@ -71,8 +71,8 @@ void PrintElfSectionHeader(ElfSectionHeader *s_header) {
     printf("sh type: %d\n", s_header->type);
     printf("sh flags: %lld\n", s_header->flags);
 
-    printf("sh virtual addr: %llx\n", s_header->v_addr);
-    printf("sh physical addr: %llx\n", s_header->p_addr);
+    printf("sh virtual addr: %lld\n", s_header->v_addr);
+    printf("sh physical addr: %lld\n", s_header->p_addr);
     printf("sh file size: %lld\n", s_header->file_size);
 
     printf("sh link: %d\n", s_header->link);
