@@ -43,6 +43,15 @@ int ReadFileIntoBufReader(FILE *fp, IoBuf *reader) {
     return 0;
 }
 
+int WriteBufferIntoFile(FILE *fp, IoBuf *reader) {
+    if (reader->buf.size > 0) {
+        fwrite(reader->buf.data, 1, reader->buf.size, fp);
+        return 1;
+    }
+
+    return 0;
+}
+
 void PrintElfHeader(ElfHeader *header) {
     printf("entry: %llx\n", header->entry);
     printf("program header offset %llx\n", header->ph_offset);
@@ -105,12 +114,22 @@ int main() {
 
     IoBuf file_buf = IoBuf_ctor(file_size, Big);
     ReadFileIntoBufReader(fp, &file_buf);
+    fclose(fp);
     //PrintHexLines(&file_buf, 16, 16);
 
     Elf elf = Elf_ctor(&file_buf);
-
     IoBuf_dtor(&file_buf);
 
+    char *prx_path = "/dev_hdd0/plugins/patchwork.sprx";
+    size_t patched_elf_size = 512 + file_size + (strlen(prx_path) + 1);
+    IoBuf patched_elf = IoBuf_ctor(patched_elf_size, Big);
+    Elf_write_prx_patched(&elf, &patched_elf, prx_path);
+
+    fp = fopen("eboot.elf.patched", "wb");
+    WriteBufferIntoFile(fp, &patched_elf);
+
+    patched_elf.pos = 0;
+    PrintHexLines(&patched_elf, 16,16);
     PrintElfHeaders(&elf);
     
     Elf_dtor(&elf);

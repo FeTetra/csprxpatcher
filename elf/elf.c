@@ -33,8 +33,8 @@ Elf Elf_ctor(IoBuf *reader) {
 
     ElfHeader header = ElfHeader_ctor(reader);
 
-    IoBuf_seek_to(reader, header.ph_offset);
     ElfProgramHeader *p_headers = malloc(sizeof(ElfProgramHeader) * header.ph_count);
+    IoBuf_seek_to(reader, header.ph_offset);
     for (int i = 0; i < header.ph_count; i++) {
         p_headers[i] = ElfProgramHeader_ctor(reader);
     }
@@ -52,6 +52,10 @@ Elf Elf_ctor(IoBuf *reader) {
     }
     IoBuf_seek_to(reader, current);
 
+    result.header = header;
+    result.p_headers = p_headers;
+    result.s_headers = s_headers;
+
     uint32_t toc_offset = VirtualAddressToOffset(&result, header.entry);
     IoBuf_seek_to(reader, toc_offset);
     IoBuf_read_u32(reader, &result.entrypoint_address);
@@ -62,10 +66,6 @@ Elf Elf_ctor(IoBuf *reader) {
     for (int i = 0; i < 4; i++) {
         IoBuf_read_u32(reader, &result.entrypoint.opcodes[i]);
     }
-
-    result.header = header;
-    result.p_headers = p_headers;
-    result.s_headers = s_headers;
 
     return result;
 }
@@ -81,24 +81,34 @@ void Elf_dtor(Elf *self) {
 
 // These expect that you have malloc'd your headers
 int Elf_add_program_header(Elf *self, ElfProgramHeader new_header) {
-    self->header.ph_count += 1;
-    ElfProgramHeader *tmp_ptr = realloc(self->p_headers, self->header.ph_count);
-    if (tmp_ptr == NULL) {
+    self->header.ph_count++;
+    size_t reallocated = (self->header.ph_count * sizeof(ElfProgramHeader));
+
+    ElfProgramHeader *tmp_ptr = realloc(self->p_headers, reallocated);
+    if (!tmp_ptr) {
+        self->header.ph_count--;
         printf("Could not expand program headers\n");
         return 0;
-    } else self->p_headers = tmp_ptr;
-    self->p_headers[self->header.ph_count] = new_header;
+    }
+    
+    self->p_headers = tmp_ptr;
+    self->p_headers[self->header.ph_count - 1] = new_header;
     return 1;
 }
 
 int Elf_add_section_header(Elf *self, ElfSectionHeader new_header) {
-    self->header.sh_count += 1;
-    ElfSectionHeader *tmp_ptr = realloc(self->p_headers, self->header.ph_count);
-    if (tmp_ptr == NULL) {
+    self->header.sh_count++;
+    size_t reallocated = (self->header.sh_count * sizeof(ElfSectionHeader));
+
+    ElfSectionHeader *tmp_ptr = realloc(self->s_headers, reallocated);
+    if (!tmp_ptr) {
+        self->header.ph_count--;
         printf("Could not expand section headers\n");
         return 0;
-    } else self->s_headers = tmp_ptr;
-    self->s_headers[self->header.ph_count] = new_header;
+    }
+    
+    self->s_headers = tmp_ptr;
+    self->s_headers[self->header.sh_count - 1] = new_header;
     return 1;
 }
 
@@ -189,7 +199,7 @@ void Elf_write_prx_patched(Elf *self, IoBuf *writer, char *prx_path) {
     // TODO: error handling my beloathed
     Elf_add_section_header(self, new_s_header);
     Elf_add_program_header(self, new_p_header);
-    self->header.sh_count = writer->pos;
+    self->header.ph_offset = writer->pos;
     for (size_t i = 0; i < self->header.sh_count; i++) {
         ElfSectionHeader_write(&self->s_headers[i], writer);
     }
@@ -199,6 +209,7 @@ void Elf_write_prx_patched(Elf *self, IoBuf *writer, char *prx_path) {
     }
 
     // Write header with updated offsets
+    IoBuf_seek_to(writer, 0);
     ElfHeader_write(&self->header, writer);
 }
 

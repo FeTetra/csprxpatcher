@@ -41,7 +41,7 @@ ElfHeader ElfHeader_ctor(IoBuf *reader) {
     uint16_t sh_ent_size;
     IoBuf_read_u16(reader, &sh_ent_size);
     IoBuf_read_u16(reader, &result.sh_count);
-    
+
     IoBuf_read_u16(reader, &result.sh_str_idx);
 
     return result;

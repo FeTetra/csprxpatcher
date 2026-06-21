@@ -4,6 +4,10 @@
 
 # PS3 ELFs
 *.elf
+*.patched
 
 # IDE Junk
 .vscode/
+
+# Mac files
+.DS_Store
