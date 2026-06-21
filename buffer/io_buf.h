@@ -7,13 +7,19 @@
 #include "buffer.h"
 #include "endian.h"
 
+typedef enum IoBufType {
+    Reader = 0,
+    Writer = 1,
+} IoBufType;
+
 typedef struct IoBuf {
     Buf buf;
     size_t pos;
     Endian endian;
+    IoBufType type;
 } IoBuf;
 
-IoBuf IoBuf_ctor(size_t size, Endian endian);
+IoBuf IoBuf_ctor(size_t size, Endian endian, IoBufType type);
 void IoBuf_dtor(IoBuf *self);
 
 int IoBuf_has_remaining(IoBuf *self, size_t size);

@@ -21,7 +21,7 @@ uint32_t VirtualAddressToOffset(Elf *self, uint64_t v_addr) {
 uint64_t Elf_get_highest_v_addr(Elf *self) {
     uint64_t result = 0;
     for (int i = 0; i < self->header.sh_count; i++) {
-        uint64_t v_addr = self->s_headers[i].v_addr;
+        uint64_t v_addr = self->s_headers[i].v_addr + self->s_headers[i].file_size;
         result = (result < v_addr) ? v_addr : result;
     }
 
@@ -122,9 +122,7 @@ void SeekToAlignment(IoBuf *writer, size_t alignment) {
 
     if (aligned > current) {
         size_t zero_buf_size = aligned - current;
-        uint8_t zeroes[zero_buf_size];
-        memset(zeroes, 0, zero_buf_size);
-        IoBuf_write_size_from_mem(writer, zeroes, zero_buf_size);
+        IoBuf_pad(writer, zero_buf_size);
     } else if (aligned < current) {
         IoBuf_seek_to(writer, aligned);
     }
@@ -140,9 +138,7 @@ void Elf_write_prx_patched(Elf *self, IoBuf *writer, char *prx_path) {
 
     size_t current = writer->pos;
     uint64_t zero_buf_size = ph_end - (uint64_t)current;
-    uint8_t zeroes[zero_buf_size];
-    memset(zeroes, 0, zero_buf_size);
-    IoBuf_write_size_from_mem(writer, zeroes, zero_buf_size);
+    IoBuf_pad(writer, zero_buf_size);
 
     for (int i = 0; i < self->header.sh_count; i++) {
         ElfSectionHeader_write(&self->s_headers[i], writer);
@@ -199,7 +195,7 @@ void Elf_write_prx_patched(Elf *self, IoBuf *writer, char *prx_path) {
     // TODO: error handling my beloathed
     Elf_add_section_header(self, new_s_header);
     Elf_add_program_header(self, new_p_header);
-    self->header.ph_offset = writer->pos;
+    self->header.sh_offset = writer->pos;
     for (size_t i = 0; i < self->header.sh_count; i++) {
         ElfSectionHeader_write(&self->s_headers[i], writer);
     }

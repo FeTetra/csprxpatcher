@@ -112,7 +112,7 @@ int main() {
         return 1;
     }
 
-    IoBuf file_buf = IoBuf_ctor(file_size, Big);
+    IoBuf file_buf = IoBuf_ctor(file_size, Big, Reader);
     ReadFileIntoBufReader(fp, &file_buf);
     fclose(fp);
     //PrintHexLines(&file_buf, 16, 16);
@@ -121,8 +121,7 @@ int main() {
     IoBuf_dtor(&file_buf);
 
     char *prx_path = "/dev_hdd0/plugins/patchwork.sprx";
-    size_t patched_elf_size = 512 + file_size + (strlen(prx_path) + 1);
-    IoBuf patched_elf = IoBuf_ctor(patched_elf_size, Big);
+    IoBuf patched_elf = IoBuf_ctor(file_size, Big, Writer);
     Elf_write_prx_patched(&elf, &patched_elf, prx_path);
 
     fp = fopen("eboot.elf.patched", "wb");
@@ -130,7 +129,7 @@ int main() {
 
     patched_elf.pos = 0;
     PrintHexLines(&patched_elf, 16,16);
-    PrintElfHeaders(&elf);
+    //PrintElfHeaders(&elf);
     
     Elf_dtor(&elf);
 
