@@ -23,7 +23,8 @@ typedef struct Payload {
 
 void BuildJump(ShellCode *self, uint32_t address);
 
-int IoBuf_write_shellcode(IoBuf *self, ShellCode *in, size_t count);
+int IoBuf_write_shellcode_with_count(IoBuf *self, ShellCode *in, size_t count);
+int IoBuf_write_shellcode(IoBuf *self, ShellCode *in);
 
 Payload Payload_ctor(
     char *sprx_path, 

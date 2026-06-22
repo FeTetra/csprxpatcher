@@ -23,14 +23,18 @@ void BuildJump(ShellCode *self, uint32_t address) {
     }
 }
 
-int IoBuf_write_shellcode(IoBuf *self, ShellCode *in, size_t count) {
-    if (self->buf.size >= count * 4) {
+int IoBuf_write_shellcode_with_count(IoBuf *self, ShellCode *in, size_t count) {
+    if (IoBuf_ensure_remaining(self, count * 4)) {
         for (size_t i = 0; i < count; i++) {
             IoBuf_write_u32(self, in->opcodes[i]);
         }
         return 1;
     }
     return 0;
+}
+
+int IoBuf_write_shellcode(IoBuf *self, ShellCode *in) {
+    return IoBuf_write_shellcode_with_count(self, in, in->count);
 }
 
 // TODO: How will we load prx_loader.bin (prolly a file)
@@ -54,12 +58,12 @@ Payload Payload_ctor(
 
     IoBuf_write_size(&payload, &bin_code, bin_size);
     IoBuf_seek_to(&payload, (bin_size - entrypoint_size)); // Seek back a bit to write old entrypoint
-    IoBuf_write_shellcode(&payload, entrypoint, entrypoint->count);
-    IoBuf_write_size_from_mem(&payload, sprx_path, sprx_path_size);
+    IoBuf_write_shellcode(&payload, entrypoint);
+    IoBuf_write_size(&payload, sprx_path, sprx_path_size);
 
     ShellCode jump = ShellCode_ctor(4); // I could do this on the stack but im lazy theres ctor
     BuildJump(&jump, (uint32_t)(entrypoint_address + entrypoint_size));
-    IoBuf_write_shellcode(&payload, &jump, jump.count);
+    IoBuf_write_shellcode(&payload, &jump);
     ShellCode_dtor(&jump);
 
     uint32_t sprx_path_address = payload_address + (uint64_t)code_size;

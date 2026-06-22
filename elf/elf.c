@@ -157,13 +157,9 @@ void Elf_write_prx_patched(Elf *self, IoBuf *writer, char *prx_path) {
         self->entrypoint_address,
         new_s_v_addr
     );
-    IoBuf_write_size(
-        writer, 
-        &entry_payload.payload.buf,
-        entry_payload.payload.buf.size // Maybe i should make an IoBuf_write_entire(writer, buf)
-    );
+    IoBuf_write_from_buf(writer, &entry_payload.payload.buf);
 
-    IoBuf_write_shellcode(writer, &entry_payload.jump, entry_payload.jump.count); // Yea i should
+    IoBuf_write_shellcode(writer, &entry_payload.jump);
     ShellCode_dtor(&entry_payload.jump);
     SeekToAlignment(writer, 0x1000);
 

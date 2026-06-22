@@ -17,8 +17,7 @@ ElfHeader ElfHeader_ctor(IoBuf *reader) {
     uint8_t abi_ver;
     IoBuf_read_u8(reader, &abi_ver);
 
-    Buf padding = Buf_ctor(7);
-    IoBuf_read_size(reader, &padding, 7);
+    IoBuf_skip(reader, 7);
 
     uint16_t type;
     IoBuf_read_u16(reader, &type);
@@ -50,7 +49,7 @@ ElfHeader ElfHeader_ctor(IoBuf *reader) {
 
 void ElfHeader_write(ElfHeader *self, IoBuf *writer) {
     unsigned char magic_num[] = {0x7F, 'E', 'L', 'F'};
-    IoBuf_write_size_from_mem(writer, magic_num, 4);
+    IoBuf_write_size(writer, magic_num, 4);
     IoBuf_write_u8(writer, 2);
     IoBuf_write_u8(writer, 2);
     IoBuf_write_u8(writer, 1);
@@ -61,7 +60,6 @@ void ElfHeader_write(ElfHeader *self, IoBuf *writer) {
     IoBuf_write_u16(writer, 0x15);
     IoBuf_write_u32(writer, 1);
     uint64_t entry_swap = u64_to_endian(self->entry, Big);
-    PrintMemBytes(&entry_swap, sizeof(entry_swap));
     IoBuf_write_u64(writer, self->entry);
     IoBuf_write_u64(writer, self->ph_offset);
     IoBuf_write_u64(writer, self->sh_offset);
