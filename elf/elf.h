@@ -23,6 +23,6 @@ typedef struct Elf {
 Elf Elf_ctor(IoBuf *reader);
 void Elf_dtor(Elf *self);
 
-void Elf_write_prx_patched(Elf *self, IoBuf *writer, char *prx_path);
+void Elf_write_prx_patched(Elf *self, IoBuf *writer, Payload *entry_payload);
 
 #endif // ELF_H

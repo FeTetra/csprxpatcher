@@ -42,7 +42,8 @@ Payload Payload_ctor(
     char *sprx_path, 
     ShellCode *entrypoint,
     uint32_t entrypoint_address,
-    uint32_t payload_address
+    uint32_t payload_address,
+    Buf *bin_code
 ) {
     Payload result;
 
@@ -53,10 +54,7 @@ Payload Payload_ctor(
 
     IoBuf payload = IoBuf_ctor(code_size + sprx_path_size, Big, Writer);
 
-    Buf bin_code = Buf_ctor(bin_size);
-    memset(bin_code.data, 0, bin_size);
-
-    IoBuf_write_size(&payload, &bin_code, bin_size);
+    IoBuf_write_from_buf(&payload, bin_code);
     IoBuf_seek_to(&payload, (bin_size - entrypoint_size)); // Seek back a bit to write old entrypoint
     IoBuf_write_shellcode(&payload, entrypoint);
     IoBuf_write_size(&payload, sprx_path, sprx_path_size);
@@ -79,6 +77,7 @@ Payload Payload_ctor(
     result.payload = payload;
     result.jump = ShellCode_ctor(4);
     BuildJump(&result.jump, payload_address);
+    result.address = payload_address;
 
     return result;
 }

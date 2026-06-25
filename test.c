@@ -32,20 +32,20 @@ void PrintHexLines(IoBuf *self, size_t per_line, size_t lines) {
     printf("\n");
 }
 
-int ReadFileIntoBufReader(FILE *fp, IoBuf *reader) {
+int ReadFileIntoBuf(FILE *fp, Buf *buf) {
     size_t size = GetFileSize(fp);
 
-    if (size > 0) {
-        fread(reader->buf.data, 1, size, fp);
+    if (size > 0 && size <= buf->size) {
+        fread(buf->data, 1, size, fp);
         return 1;
     }
 
     return 0;
 }
 
-int WriteBufferIntoFile(FILE *fp, IoBuf *reader) {
-    if (reader->buf.size > 0) {
-        fwrite(reader->buf.data, 1, reader->buf.size, fp);
+int WriteBufferIntoFile(FILE *fp, Buf *buf) {
+    if (buf->size > 0) {
+        fwrite(buf->data, 1, buf->size, fp);
         return 1;
     }
 
@@ -113,19 +113,33 @@ int main() {
     }
 
     IoBuf file_buf = IoBuf_ctor(file_size, Big, Reader);
-    ReadFileIntoBufReader(fp, &file_buf);
+    ReadFileIntoBuf(fp, &file_buf.buf);
     fclose(fp);
     //PrintHexLines(&file_buf, 16, 16);
 
     Elf elf = Elf_ctor(&file_buf);
     IoBuf_dtor(&file_buf);
+    IoBuf patched_elf = IoBuf_ctor(file_size, Big, Writer);
+
+    fp = fopen("prx_load_payload.bin", "rb+");
+    file_size = GetFileSize(fp);
+    Buf payload_bin = Buf_ctor(file_size);
+    ReadFileIntoBuf(fp, &payload_bin);
+    fclose(fp);
 
     char *prx_path = "/dev_hdd0/plugins/patchwork.sprx";
-    IoBuf patched_elf = IoBuf_ctor(file_size, Big, Writer);
-    Elf_write_prx_patched(&elf, &patched_elf, prx_path);
+    Payload entry_payload = Payload_ctor(
+        prx_path, 
+        &elf.entrypoint, 
+        elf.entrypoint_address,
+        0x13370000,
+        &payload_bin
+    );
+
+    Elf_write_prx_patched(&elf, &patched_elf, &entry_payload);
 
     fp = fopen("eboot.elf.patched", "wb");
-    WriteBufferIntoFile(fp, &patched_elf);
+    WriteBufferIntoFile(fp, &patched_elf.buf);
 
     patched_elf.pos = 0;
     PrintHexLines(&patched_elf, 16,16);

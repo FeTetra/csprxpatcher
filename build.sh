@@ -9,3 +9,5 @@ if [ $[DEBUG] == 1 ]; then
 fi
 
 gcc $CFLAGS $CSRCS
+
+llvm-mc -triple=ppc64 -filetype=obj elf/prx_load_payload.s | llvm-objcopy -O binary - prx_load_payload.bin

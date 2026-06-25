@@ -19,6 +19,7 @@ void ShellCode_dtor(ShellCode *self);
 typedef struct Payload {
     IoBuf payload;
     ShellCode jump;
+    uint32_t address;
 } Payload;
 
 void BuildJump(ShellCode *self, uint32_t address);
@@ -30,7 +31,8 @@ Payload Payload_ctor(
     char *sprx_path, 
     ShellCode *entrypoint,
     uint32_t entrypoint_address,
-    uint32_t payload_address
+    uint32_t payload_address,
+    Buf *bin_code
 );
 
 void Payload_dtor(Payload *self);
