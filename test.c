@@ -52,6 +52,22 @@ int WriteBufferIntoFile(FILE *fp, Buf *buf) {
     return 0;
 }
 
+Buf CreateBufFromFile(char *path) {
+    FILE *fp = fopen(path, "rb+");
+    size_t file_size = GetFileSize(fp);
+    Buf result = Buf_ctor(file_size);
+    ReadFileIntoBuf(fp, &result);
+    fclose(fp);
+
+    return result;
+}
+
+void CreateFileFromBuf(Buf *buf, char *path) {
+    FILE *fp = fopen(path, "wb+");
+    WriteBufferIntoFile(fp, buf);
+    fclose(fp);
+}
+
 void PrintElfHeader(ElfHeader *header) {
     printf("entry: %llx\n", header->entry);
     printf("program header offset %llx\n", header->ph_offset);
@@ -103,49 +119,29 @@ void PrintElfHeaders(Elf *self) {
 }
 
 int main() {
-    FILE *fp = fopen("eboot.elf", "rb+");
-    size_t file_size = GetFileSize(fp);
-    printf("elf file size: %lu\n", file_size);
+    IoBuf elf_data = { CreateBufFromFile("eboot.elf"), 0, Big, Writer };
+    Buf payload_bin = CreateBufFromFile("prx_load_payload.bin");
 
-    if (file_size <= 0) {
-        printf("invalid file size\n");
-        return 1;
-    }
+    Elf elf = Elf_ctor(&elf_data);
 
-    IoBuf file_buf = IoBuf_ctor(file_size, Big, Reader);
-    ReadFileIntoBuf(fp, &file_buf.buf);
-    fclose(fp);
-    //PrintHexLines(&file_buf, 16, 16);
-
-    Elf elf = Elf_ctor(&file_buf);
-    IoBuf_dtor(&file_buf);
-    IoBuf patched_elf = IoBuf_ctor(file_size, Big, Writer);
-
-    fp = fopen("prx_load_payload.bin", "rb+");
-    file_size = GetFileSize(fp);
-    Buf payload_bin = Buf_ctor(file_size);
-    ReadFileIntoBuf(fp, &payload_bin);
-    fclose(fp);
-
-    char *prx_path = "/dev_hdd0/plugins/patchwork.sprx";
     Payload entry_payload = Payload_ctor(
-        prx_path, 
+        "/dev_hdd0/plugins/patchwork.sprx", 
         &elf.entrypoint, 
         elf.entrypoint_address,
         0x13370000,
         &payload_bin
     );
 
-    Elf_write_prx_patched(&elf, &patched_elf, &entry_payload);
-
-    fp = fopen("eboot.elf.patched", "wb");
-    WriteBufferIntoFile(fp, &patched_elf.buf);
-
-    patched_elf.pos = 0;
-    PrintHexLines(&patched_elf, 16,16);
+    Elf_write_prx_patched(&elf, &elf_data, &entry_payload);
+    elf_data.pos = 0;
+    PrintHexLines(&elf_data, 16,16);
     //PrintElfHeaders(&elf);
+
+    CreateFileFromBuf(&elf_data.buf, "eboot.elf.patched");
     
     Elf_dtor(&elf);
+    IoBuf_dtor(&elf_data);
+    Buf_dtor(&payload_bin);
 
     return 0;
 }    
