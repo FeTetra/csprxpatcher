@@ -1,8 +1,10 @@
+// Credit to NotNite's original code for the assembly
+// I have only made small changes using macros to make typing it easier
+
 .set PRX_OPT_STACK, 0x40
 .set PRX_NAME_STRING, 0x12345678
 .set REGISTER_STACK_OFFSET, 0x50
 
-// Recursive macro to store and estore egister ange
 .macro PRESERVE reg
     std \reg, REGISTER_STACK_OFFSET + (8 * \reg)(1)
 .endm
@@ -11,6 +13,7 @@
     ld \reg, REGISTER_STACK_OFFSET + (8 * \reg)(1)
 .endm
 
+// TODO: Can we get away with preserving fewer registers? (i.e. only r0-r3)
 preserve_registers:
     PRESERVE 0
     PRESERVE 1
