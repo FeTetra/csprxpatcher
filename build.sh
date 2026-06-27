@@ -1,5 +1,6 @@
 CSRCS="buffer/buffer.c buffer/io_buf.c buffer/endian.c"
-CSRCS="$CSRCS elf/elf_header.c elf/elf_p_header.c elf/elf_s_header.c elf/elf.c elf/shellcode.c"
+CSRCS="$CSRCS elf/elf_header.c elf/elf_p_header.c elf/elf_s_header.c elf/elf.c"
+CSRCS="$CSRCS shellcode/shellcode.c"
 CFLAGS=""
 DEBUG=1
 
@@ -10,4 +11,4 @@ fi
 
 gcc $CFLAGS $CSRCS
 
-llvm-mc -triple=ppc64 -filetype=obj elf/prx_load_payload.s | llvm-objcopy -O binary - prx_load_payload.bin
+llvm-mc -triple=ppc64 -filetype=obj shellcode/prx_load_payload.s | llvm-objcopy -O binary - prx_load_payload.bin

@@ -1,9 +1,6 @@
 #include <stdio.h>
 
 #include "elf.h"
-#include "elf_header.h"
-#include "elf_s_header.h"
-#include "shellcode.h"
 
 uint32_t VirtualAddressToOffset(Elf *self, uint64_t v_addr) {
     uint32_t result = 0;
@@ -28,6 +25,8 @@ uint64_t Elf_get_highest_v_addr(Elf *self) {
     return result;
 }
 
+// sprxpatcher doesnt skip nobits sections, which somehow doesnt have any side effects
+// except for writing old garbage section header data below the original sections
 void WriteSection(ElfSectionHeader *s_header, IoBuf *writer) {
     if (s_header->type != Nobits) {
         IoBuf_seek_to(writer, s_header->p_addr);

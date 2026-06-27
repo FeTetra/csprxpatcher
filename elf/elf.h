@@ -8,7 +8,7 @@
 #include "elf_p_header.h"
 #include "elf_s_header.h"
 #include "../buffer/io_buf.h"
-#include "shellcode.h"
+#include "../shellcode/shellcode.h"
 
 typedef struct Elf {
     ElfHeader header;
