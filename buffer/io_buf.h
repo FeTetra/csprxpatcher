@@ -26,8 +26,8 @@ int IoBuf_has_remaining(IoBuf *self, size_t size);
 int IoBuf_expand(IoBuf *self, size_t size);
 int IoBuf_ensure_remaining(IoBuf *self, size_t size);
 
-int IoBuf_seek_to(IoBuf *self, size_t pos);
-int IoBuf_seek_from_cur(IoBuf *self, size_t nbytes);
+void IoBuf_seek_to(IoBuf *self, size_t pos);
+void IoBuf_seek_from_cur(IoBuf *self, size_t nbytes);
 
 int IoBuf_skip(IoBuf *self, size_t count);
 int IoBuf_pad(IoBuf *self, size_t count);

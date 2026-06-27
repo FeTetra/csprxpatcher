@@ -47,7 +47,7 @@ Payload Payload_ctor(
 ) {
     Payload result;
 
-    size_t bin_size = 4 * 128; // Test prx_loader.bin size
+    size_t bin_size = bin_code->size;
     size_t entrypoint_size = (4 * entrypoint->count);
     size_t code_size = bin_size + entrypoint_size;
     size_t sprx_path_size = strlen(sprx_path) + 1; // Include null terminator
@@ -57,10 +57,12 @@ Payload Payload_ctor(
     IoBuf_write_from_buf(&payload, bin_code);
     IoBuf_seek_to(&payload, (bin_size - entrypoint_size)); // Seek back a bit to write old entrypoint
     IoBuf_write_shellcode(&payload, entrypoint);
+    IoBuf_seek_to(&payload, code_size);
     IoBuf_write_size(&payload, sprx_path, sprx_path_size);
 
     ShellCode jump = ShellCode_ctor(4); // I could do this on the stack but im lazy theres ctor
     BuildJump(&jump, (uint32_t)(entrypoint_address + entrypoint_size));
+    IoBuf_seek_to(&payload, bin_size);
     IoBuf_write_shellcode(&payload, &jump);
     ShellCode_dtor(&jump);
 

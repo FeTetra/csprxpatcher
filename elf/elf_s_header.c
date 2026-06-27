@@ -10,7 +10,6 @@ ElfSectionHeader ElfSectionHeader_ctor(IoBuf *reader) {
     IoBuf_read_u64(reader, &result.v_addr);
     IoBuf_read_u64(reader, &result.p_addr);
     IoBuf_read_u64(reader, &result.file_size);
-    result.s_data = Buf_ctor(result.file_size);
 
     IoBuf_read_u32(reader, &result.link);
     IoBuf_read_u32(reader, &result.info);

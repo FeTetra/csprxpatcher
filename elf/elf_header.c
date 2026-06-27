@@ -59,7 +59,6 @@ void ElfHeader_write(ElfHeader *self, IoBuf *writer) {
     IoBuf_write_u16(writer, 2);
     IoBuf_write_u16(writer, 0x15);
     IoBuf_write_u32(writer, 1);
-    uint64_t entry_swap = u64_to_endian(self->entry, Big);
     IoBuf_write_u64(writer, self->entry);
     IoBuf_write_u64(writer, self->ph_offset);
     IoBuf_write_u64(writer, self->sh_offset);

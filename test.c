@@ -119,10 +119,11 @@ void PrintElfHeaders(Elf *self) {
 }
 
 int main() {
-    IoBuf elf_data = { CreateBufFromFile("eboot.elf"), 0, Big, Writer };
+    IoBuf elf_data = { CreateBufFromFile("eboot.elf"), 0, Big, Reader };
     Buf payload_bin = CreateBufFromFile("prx_load_payload.bin");
-
     Elf elf = Elf_ctor(&elf_data);
+
+    IoBuf elf_patched = IoBuf_ctor(0, Big, Writer);
 
     Payload entry_payload = Payload_ctor(
         "/dev_hdd0/plugins/patchwork.sprx", 
@@ -132,15 +133,16 @@ int main() {
         &payload_bin
     );
 
-    Elf_write_prx_patched(&elf, &elf_data, &entry_payload);
+    Elf_write_prx_patched(&elf, &elf_patched, &entry_payload);
     elf_data.pos = 0;
-    PrintHexLines(&elf_data, 16,16);
+    PrintHexLines(&elf_patched, 16,16);
     //PrintElfHeaders(&elf);
 
-    CreateFileFromBuf(&elf_data.buf, "eboot.elf.patched");
+    CreateFileFromBuf(&elf_patched.buf, "csprxpatcher.elf");
     
     Elf_dtor(&elf);
     IoBuf_dtor(&elf_data);
+    IoBuf_dtor(&elf_patched);
     Buf_dtor(&payload_bin);
 
     return 0;

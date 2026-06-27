@@ -6,6 +6,8 @@
 
 #include "../buffer/io_buf.h"
 
+#define EH_SIZE 64
+
 typedef struct ElfHeader {
     uint64_t entry;
     uint64_t ph_offset;

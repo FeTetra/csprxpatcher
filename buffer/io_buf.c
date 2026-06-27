@@ -11,7 +11,7 @@ void IoBuf_dtor(IoBuf *self) {
 }
 
 int IoBuf_has_remaining(IoBuf *self, size_t size) {
-    return (self->buf.size - self->pos) >= size;
+    return (self->pos + size <= self->buf.size);
 }
 
 int IoBuf_expand(IoBuf *self, size_t size) {
@@ -26,27 +26,20 @@ int IoBuf_expand(IoBuf *self, size_t size) {
 }
 
 int IoBuf_ensure_remaining(IoBuf *self, size_t size) {
-    if (IoBuf_has_remaining(self, size)) {
+    size_t required = self->pos + size;
+    if (required <= self->buf.size) {
         return 1;
     }
 
-    return IoBuf_expand(self, size);
+    return IoBuf_expand(self, required - self->buf.size);
 }
 
-int IoBuf_seek_to(IoBuf *self, size_t pos) {
-    if (pos <= self->buf.size) {
-        self->pos = pos;
-        return 1;
-    }
-    return 0;
+void IoBuf_seek_to(IoBuf *self, size_t pos) {
+    self->pos = pos;
 }
 
-int IoBuf_seek_from_cur(IoBuf *self, size_t nbytes) {
-    if ((self->pos + nbytes) <= self->buf.size) {
-        self->pos += nbytes;
-        return 1;
-    }
-    return 0;
+void IoBuf_seek_from_cur(IoBuf *self, size_t nbytes) {
+    IoBuf_seek_to(self, self->pos + nbytes);
 }
 
 int IoBuf_read_size(IoBuf *self, void *out, size_t size) {
@@ -63,15 +56,21 @@ int IoBuf_read_u8(IoBuf *self, uint8_t *out) {
 }
 
 int IoBuf_read_u16(IoBuf *self, uint16_t *out) {
-    return IoBuf_read_size(self, out, sizeof(uint16_t));
+    int result = IoBuf_read_size(self, out, sizeof(uint16_t));
+    *out = u16_from_endian(*out, self->endian);
+    return result;
 }
 
 int IoBuf_read_u32(IoBuf *self, uint32_t *out) {
-    return IoBuf_read_size(self, out, sizeof(uint32_t));
+    int result = IoBuf_read_size(self, out, sizeof(uint32_t));
+    *out = u32_from_endian(*out, self->endian);
+    return result;
 }
 
 int IoBuf_read_u64(IoBuf *self, uint64_t *out) {
-    return IoBuf_read_size(self, out, sizeof(uint64_t));
+    int result = IoBuf_read_size(self, out, sizeof(uint64_t));
+    *out = u64_from_endian(*out, self->endian);
+    return result;
 }
 
 int IoBuf_read_into_buf(IoBuf *self, Buf *out) {
@@ -107,14 +106,17 @@ int IoBuf_write_u8(IoBuf *self, uint8_t in) {
 }
 
 int IoBuf_write_u16(IoBuf *self, uint16_t in) {
+    in = u16_to_endian(in, self->endian);
     return IoBuf_write_size(self, &in, sizeof(uint16_t));
 }
 
 int IoBuf_write_u32(IoBuf *self, uint32_t in) {
+    in = u32_to_endian(in, self->endian);
     return IoBuf_write_size(self, &in, sizeof(uint32_t));
 }
 
 int IoBuf_write_u64(IoBuf *self, uint64_t in) {
+    in = u64_to_endian(in, self->endian);
     return IoBuf_write_size(self, &in, sizeof(uint64_t));
 }
 
